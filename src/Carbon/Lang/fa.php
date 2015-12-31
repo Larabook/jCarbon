@@ -26,4 +26,17 @@ return array(
     'from_now'  => ':time بعد',
     'after'     => ':time پیش از',
     'before'    => ':time پس از',
+
+    'january'   => 'ژانویه',
+    'february'  => 'فوریه',
+    'march'     => 'مارس',
+    'april'     => 'آوریل',
+    'may'       => 'مه',
+    'june'      => 'ژوئن',
+    'july'      => 'جولای',
+    'august'    => 'اوت',
+    'september' => 'سپتامبر',
+    'october'   => 'اکتبر',
+    'november'  => 'نوامبر',
+    'december'  => 'دسامبر',
 );
