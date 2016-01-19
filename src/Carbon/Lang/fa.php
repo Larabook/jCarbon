@@ -12,6 +12,7 @@
 /**
  * Translation messages.  See http://symfony.com/doc/current/book/translation.html
  * for possible formats.
+ * This is a test for branching and pull requests
  */
 
 return array(
