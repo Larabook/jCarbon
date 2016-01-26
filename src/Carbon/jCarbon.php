@@ -27,6 +27,21 @@ class jCarbon extends Carbon
 	const FRIDAY = 6;
 
 	/**
+	 * Names of days of the week.
+	 *
+	 * @var array
+	 */
+	protected static $days = array(
+			self::SATURDAY => 'Saturday',
+			self::SUNDAY => 'Sunday',
+			self::MONDAY => 'Monday',
+			self::TUESDAY => 'Tuesday',
+			self::WEDNESDAY => 'Wednesday',
+			self::THURSDAY => 'Thursday',
+			self::FRIDAY => 'Friday',
+	);
+
+	/**
 	 * First day of week.
 	 *
 	 * @var int
@@ -447,8 +462,12 @@ class jCarbon extends Carbon
 	 *
 	 * @return Carbon
 	 */
-	public function setJalaliDate($year, $month, $day)
+	public function setDate($year, $month, $day,$mode=self::MODE_JALALI)
 	{
+		if($mode==self::MODE_GREGORIAN){
+			return parent::setDate($gy,$gm,$gd);
+		}
+
 		list($gy,$gm,$gd)=self::to_gregorian($year, $month, $day);
 		return parent::setDate($gy,$gm,$gd);
 	}
@@ -464,9 +483,14 @@ class jCarbon extends Carbon
 	 *
 	 * @return static
 	 */
-	public function setJalaliDateTime($year, $month, $day, $hour, $minute, $second = 0)
+	public function setDateTime($year, $month, $day, $hour, $minute, $second=0,$mode=self::MODE_JALALI)
 	{
+		if($mode == self::MODE_GREGORIAN) {
+			return parent::setDateTime($gy, $gm, $gd, $hour, $minute, $second);
+		}
 		list($gy,$gm,$gd)=self::to_gregorian($year, $month, $day);
 		return parent::setDate($gy,$gm,$gd)->setTime($hour, $minute, $second);
 	}
+
+
 }

@@ -20,4 +20,7 @@ printf("Right now in Vancouver is %s", jCarbon::now('America/Vancouver'));  //im
 date_default_timezone_set('Asia/tehran');
 
 $t=new Carbon\jCarbon();
-echo $t->format('Y/m/d H:i:s'); //->setDate(2016,2,11,12,10,11)
+//$t->day=3;
+//$t->month=3;
+echo "<br>";
+echo $t->startOfWeek()->format('Y-m-d l'); //->setDate(2016,2,11,12,10,11)
