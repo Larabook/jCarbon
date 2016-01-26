@@ -21,6 +21,7 @@ class jCarbon extends Carbon
 	const WEDNESDAY = 4;
 	const THURSDAY = 5;
 	const FRIDAY = 6;
+
 	/**
 	 * First day of week.
 	 *
