@@ -130,4 +130,24 @@ class jCarbon extends Carbon
 		return array($gy, $gm, $gd);
 	}
 
+	/**
+	 * convert to persian number
+	 * @param $string
+	 * @return null|string
+	 */
+	private function to_persian_digits($string)
+	{
+		$persian_digits = array('&#1776;', '&#1777;', '&#1778;', '&#1779;', '&#1780;', '&#1781;', '&#1782;', '&#1783;', '&#1784;', '&#1785;');
+		$out = null;
+		$i = 0;
+		while (($ch = substr($string, $i, 1)) !== false) {
+			if (isset($persian_digits[$ch]))
+				$out .= $persian_digits[$ch];
+			else
+				$out .= $ch;
+			$i++;
+		}
+		return $out;
+	}
+
 }
