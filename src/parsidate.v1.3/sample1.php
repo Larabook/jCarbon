@@ -19,7 +19,7 @@ echo "<br>";
 //
 //################################
 ////Disc:  ParsiDate عمليات جمع و کسر از تاريخ
-echo "<br>ex..#2  add() method<br/>";
+
 echo parsidate()->add('y',-1) // Sal-1 mishavad
                 ->add('m',1)  // Mah+1 mishavad
                 ->add('d',5)  // Day+5 mishavad
