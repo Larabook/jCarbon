@@ -11,6 +11,9 @@ namespace Carbon;
 
 class jCarbon extends Carbon
 {
+	const MODE_JALALI='fa';
+	const MODE_GREGORIAN='en';
+
 	/**
 	 * The day constants.
 	 */
@@ -131,23 +134,15 @@ class jCarbon extends Carbon
 	}
 
 	/**
-	 * convert to persian number
-	 * @param $string
-	 * @return null|string
+	 * convert to persian number vise versa
+	 * @param $str
+	 * @return mixed
 	 */
-	private function to_persian_digits($string)
+	private static function to_digits($str,$mod=self::MODE_GREGORIAN)
 	{
-		$persian_digits = array('&#1776;', '&#1777;', '&#1778;', '&#1779;', '&#1780;', '&#1781;', '&#1782;', '&#1783;', '&#1784;', '&#1785;');
-		$out = null;
-		$i = 0;
-		while (($ch = substr($string, $i, 1)) !== false) {
-			if (isset($persian_digits[$ch]))
-				$out .= $persian_digits[$ch];
-			else
-				$out .= $ch;
-			$i++;
-		}
-		return $out;
+		$num_a = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.');
+		$key_a = array('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹', $mf);
+		return ($mod == self::MODE_JALALI) ? str_replace($num_a, $key_a, $str) : str_replace($key_a, $num_a, $str);
 	}
 
 }
