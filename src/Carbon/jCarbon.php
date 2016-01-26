@@ -13,6 +13,7 @@ class jCarbon extends Carbon
 {
 	const MODE_JALALI='fa';
 	const MODE_GREGORIAN='en';
+	const DEFAULT_FORMAT='Y/m/d';
 
 	/**
 	 * The day constants.
@@ -318,7 +319,7 @@ class jCarbon extends Carbon
 	 * @param string $digist
 	 * @return mixed|null|string
 	 */
-	public function format($format,$digist=self::MODE_GREGORIAN)
+	public function format($format=self::DEFAULT_FORMAT,$digist=self::MODE_GREGORIAN)
 	{
 		$timestamp=parent::getTimestamp();
 		list($gy, $gm, $gd) = explode('-', date('Y-m-d', $timestamp));
@@ -436,4 +437,36 @@ class jCarbon extends Carbon
 		return $out;
 	}
 
+	/**
+	 * Sets current DataTime object to the given jalali date.
+	 * Calls modify as a workaround for a php bug
+	 *
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 *
+	 * @return Carbon
+	 */
+	public function setJalaliDate($year, $month, $day)
+	{
+		list($gy,$gm,$gd)=self::to_gregorian($year, $month, $day);
+		return parent::setDate($gy,$gm,$gd);
+	}
+
+	/**
+	 * Sets current DataTime object to the given jalali date and time.
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 * @param int $hour
+	 * @param int $minute
+	 * @param int $second
+	 *
+	 * @return static
+	 */
+	public function setJalaliDateTime($year, $month, $day, $hour, $minute, $second = 0)
+	{
+		list($gy,$gm,$gd)=self::to_gregorian($year, $month, $day);
+		return parent::setDate($gy,$gm,$gd)->setTime($hour, $minute, $second);
+	}
 }
