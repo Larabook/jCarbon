@@ -11,9 +11,23 @@ namespace Carbon;
 
 class jCarbon extends Carbon
 {
-	const MODE_JALALI='fa';
-	const MODE_GREGORIAN='en';
-	const DEFAULT_FORMAT='Y/m/d';
+	const MODE_JALALI = 'jalali';
+	const MODE_GREGORIAN = 'gregorian';
+
+
+	/**
+	 * Default format to use for __toString method when type juggling occurs.
+	 *
+	 * @var string
+	 */
+	const DEFAULT_TO_STRING_FORMAT = 'Y/m/d';
+
+	/**
+	 * Format to use for __toString method when type juggling occurs.
+	 *
+	 * @var string
+	 */
+	protected static $toStringFormat = self::DEFAULT_TO_STRING_FORMAT;
 
 	/**
 	 * The day constants.
@@ -25,6 +39,21 @@ class jCarbon extends Carbon
 	const WEDNESDAY = 4;
 	const THURSDAY = 5;
 	const FRIDAY = 6;
+
+	/**
+	 * Names of days of the week.
+	 *
+	 * @var array
+	 */
+	protected static $days = array(
+		self::SATURDAY => 'Saturday',
+		self::SUNDAY => 'Sunday',
+		self::MONDAY => 'Monday',
+		self::TUESDAY => 'Tuesday',
+		self::WEDNESDAY => 'Wednesday',
+		self::THURSDAY => 'Thursday',
+		self::FRIDAY => 'Friday',
+	);
 
 	/**
 	 * First day of week.
@@ -49,6 +78,35 @@ class jCarbon extends Carbon
 		self::FRIDAY,
 	);
 
+
+	const FARSI_DIGITS = 'farsi';
+	const LATIN_DIGITS = 'latin';
+	/**
+	 * Default Digits type. (e.g Farsi or Latin)
+	 *
+	 * @var array
+	 */
+	protected static $defaultDigitsType = self::FARSI_DIGITS;
+
+
+	public static function digitsType($mode)
+	{
+		if (in_array($mode, [self::FARSI_DIGITS, self::LATIN_DIGITS]))
+			self::$defaultDigitsType = $mode;
+	}
+
+	/**
+	 * Default Digits type. (e.g Farsi or Latin)
+	 *
+	 * @var array
+	 */
+	protected static $rtl = false;
+
+
+	public static function rtl($mode=true)
+	{
+		self::$rtl=(bool) $mode;
+	}
 
 	/**
 	 * تابع تبدل تاریخ میلادی به جلالی
@@ -144,16 +202,17 @@ class jCarbon extends Carbon
 	{
 		return (int)($a / $b);
 	}
+
 	/**
 	 * convert to persian number vise versa
 	 * @param $str
 	 * @return mixed
 	 */
-	private static function to_digits($str,$digist=self::MODE_GREGORIAN,$jalali_float_symbol='٫')
+	private static function to_digits($str, $digits = self::LATIN_DIGITS, $jalali_float_symbol = '٫')
 	{
 		$num_a = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.');
 		$key_a = array('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹', $jalali_float_symbol);
-		return ($digist == self::MODE_JALALI) ? str_replace($num_a, $key_a, $str) : str_replace($key_a, $num_a, $str);
+		return ($digits == self::FARSI_DIGITS) ? str_replace($num_a, $key_a, $str) : str_replace($key_a, $num_a, $str);
 	}
 
 	/**
@@ -293,10 +352,10 @@ class jCarbon extends Carbon
 	private function is_leap_year($year)
 	{
 		return array_search((($year + 2346) % 2820) % 128, array(
-				5, 9, 13, 17, 21, 25, 29,
-				34, 38, 42, 46, 50, 54, 58, 62,
-				67, 71, 75, 79, 83, 87, 91, 95,
-				100, 104, 108, 112, 116, 120, 124, 0
+			5, 9, 13, 17, 21, 25, 29,
+			34, 38, 42, 46, 50, 54, 58, 62,
+			67, 71, 75, 79, 83, 87, 91, 95,
+			100, 104, 108, 112, 116, 120, 124, 0
 		));
 	}
 
@@ -309,19 +368,19 @@ class jCarbon extends Carbon
 	private function day_of_year($month, $day)
 	{
 		return $month <= 6 ?
-				($month - 1 * 31 + $day) :
-				186 + (($month - 6 - 1) * 30 + $day);
+			(($month - 1) * 31 + $day) :
+			186 + (($month - 6 - 1) * 30 + $day);
 	}
 
 	/**
 	 * Returns date formatted according to given format.
 	 * @param string $format
-	 * @param string $digist
+	 * @param string $digits
 	 * @return mixed|null|string
 	 */
-	public function format($format=self::DEFAULT_FORMAT,$digist=self::MODE_GREGORIAN)
+	public function format($format = self::DEFAULT_TO_STRING_FORMAT, $digits = null)
 	{
-		$timestamp=parent::getTimestamp();
+		$timestamp = parent::getTimestamp();
 		list($gy, $gm, $gd) = explode('-', date('Y-m-d', $timestamp));
 		list($jy, $jm, $jd) = self::to_jalali($gy, $gm, $gd);
 
@@ -336,105 +395,154 @@ class jCarbon extends Carbon
 				continue;
 			}
 
-			switch ($ch) {
-				case 'A':
-					if (date('A', $timestamp) == 'PM')
-						$out .= 'بعد از ظهر';
-					else
-						$out .= 'قبل از ظهر';
-					break;
-				case 'a':
-					if (date('A', $timestamp) == 'PM')
-						$out .= "ب.ظ";
-					else
-						$out .= "ق.ظ";
-					break;
-				case 'd':
-					$out .= sprintf('%02d', $jd); // day
-					break;
-				case 'D':
-					$out .= $this->to_persian_weekday(date('w', $timestamp), true);// Persian Shorted day of week ex:  ش
-					break;
-				case 'F':
-					$out .= $this->to_persian_month($jm);// Persian Month ex: فروردین
-					break;
-				case 'g':
-					$out .= date('g', $timestamp);// 12-hour format of an hour without leading zeros(1 through 12)
-					break;
-				case 'G':
-					$out .= date('G', $timestamp);// 24-hour format of an hour without leading zeros(0 through 23)
-					break;
-				case "h":
-					$out .= date("h", $timestamp);// 12-hour format of an hour with leading zeros(01 through 12)
-					break;
-				case "H":
-					$out .= date("H", $timestamp);// 24-hour format of an hour with leading zeros(00 through 23)
-					break;
-				case "i":
-					$out .= date("i", $timestamp);// Minutes with leading zeros(00 to 59)
-					break;
-				case "j":
-					$out .= intval($jd);// intval(day)
-					break;
-				case "l":
-					$out .= $this->to_persian_weekday(date('w', $timestamp), false);// Persian  day of week ex:  شنبه
-					break;
-				case "m":
-					$out .= sprintf('%02d', $jm); // month
-					break;
-				case "M":
-					$out .= $this->to_persian_month($jm, true); // Persian  Shorted Month ex : فرو , ارد
-					break;
-				case "n":
-					$out .= intval($jm); // intval(month)
-					break;
-				case "L":
-					$out .= $this->is_leap_year($jy) ? 1 : 0; // year is Leap (Kabiseh)
-					break;
-				case "s":
-					$out .= date("s", $timestamp); // Seconds, with leading zeros	00 through 59
-					break;
-				case "S":
-					$out .= 'ام';
-					break;
-				case "t":
-					$is_leap = $this->is_leap_year($jy) ? 1 : 0;
-					if ($jm <= 6)
-						$jds_in_month = 31;
-					else if ($jm > 6 && $jm < 12)
-						$jds_in_month = 30;
-					else if ($jm == 12)
-						$jds_in_month = $is_leap ? 30 : 29;
-					$out .= $jds_in_month; // last day of month
-					break;
-				case "U" :
-					$out .= $timestamp; // Unix TimeStamp
-					break;
-				case "w":
-					$jd_of_week = array(6 => 0, 0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5, 5 => 6);
-					$out .= $jd_of_week[date("w", $timestamp)]; // day of week
-					break;
-				case "W":
-					$out .= ceil($this->day_of_year($jm, $jd) / 7); // number of weeks
-					break;
-				case "y":
-					$out .= substr($jy, 2); // short year ex : 1391  =>  91
-					break;
-				case "Y":
-					$out .= $jy; // Full Year ex : 1391
-					break;
-				case "z":
-					$out .= $this->day_of_year($jm, $jd); // the day of the year ex: 280  or 365
-					break;
+			//Intact formats
+			if(in_array($ch,array('B','h','H','g','G','i','s','I','U','u','Z','O','P') )){
+				$ch .= date($ch, $timestamp);
+			} else {
+				switch ($ch) {
+					case 'A':
+						if (date('A', $timestamp) == 'PM')
+							$out .= 'بعد از ظهر';
+						else
+							$out .= 'قبل از ظهر';
+						break;
+					case 'a':
+						if (date('A', $timestamp) == 'PM')
+							$out .= "ب.ظ";
+						else
+							$out .= "ق.ظ";
+						break;
+					case 'd':
+						$out .= sprintf('%02d', $jd); // day
+						break;
+					case 'D':
+						$out .= $this->to_persian_weekday(date('w', $timestamp), true);// Persian Shorted day of week ex:  ش
+						break;
+					case 'F':
+						$out .= $this->to_persian_month($jm);// Persian Month ex: فروردین
+						break;
 
-				default :
-					$out .= $ch;
+					case "j":
+						$out .= intval($jd);// intval(day)
+						break;
+					case "l":
+						$out .= $this->to_persian_weekday(date('w', $timestamp), false);// Persian  day of week ex:  شنبه
+						break;
+					case "m":
+						$out .= sprintf('%02d', $jm); // month
+						break;
+					case "M":
+						$out .= $this->to_persian_month($jm, true); // Persian  Shorted Month ex : فرو , ارد
+						break;
+					case "n":
+						$out .= intval($jm); // intval(month)
+						break;
+					case "N":
+						$jd_of_week = array(7 => 2, 1 => 3, 2 => 4, 3 => 5, 4 => 6, 5 => 7, 6 => 1);
+						$out .= $jd_of_week[date("N", $timestamp)]; // day of week
+						break;
+					case "L":
+						$out .= $this->is_leap_year($jy) ? 1 : 0; // year is Leap (Kabiseh)
+						break;
+					case "S":
+						$out .= 'ام';
+						break;
+					case "t":
+						$is_leap = $this->is_leap_year($jy) ? 1 : 0;
+						if ($jm <= 6)
+							$jds_in_month = 31;
+						else if ($jm > 6 && $jm < 12)
+							$jds_in_month = 30;
+						else if ($jm == 12)
+							$jds_in_month = $is_leap ? 30 : 29;
+						$out .= $jds_in_month; // last day of month
+						break;
+					case "w":
+						$jd_of_week = array(6 => 0, 0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5, 5 => 6);
+						$out .= $jd_of_week[date("w", $timestamp)]; // day of week
+						break;
+					case "W":
+						$daysOFLastWeek=intval((new static)->setDate($jy,1,1)->format('w',self::LATIN_DIGITS)); // تعداد روزهای آخرین هفته قبل از سال نو
+						$out .= ceil(($this->day_of_year($jm, $jd)+$daysOFLastWeek) / 7); // number of weeks
+						break;
+					case "y":
+						$out .= substr($jy, 2); // short year ex : 1391  =>  91
+						break;
+					case "Y":
+						$out .= $jy; // Full Year ex : 1391
+						break;
+					case "z":
+						$out .= $this->day_of_year($jm, $jd); // the day of the year ex: 280  or 365
+						break;
+
+					default :
+						$out .= $ch;
+				}
 			}
 			$i++;
 		}
-		if ($digist == self::MODE_JALALI)
-			return self::to_digits($out, self::MODE_JALALI,'.');
+		if(is_null($digits))
+			$digits=self::$defaultDigitsType;
+		if ($digits == self::FARSI_DIGITS)
+			$out= self::to_digits($out, self::FARSI_DIGITS, '.');
+		/*	if(self::$rtl)
+				$out = self::fixRTLAlign($out);*/
 		return $out;
+	}
+
+	public static function fixRTLAlign($string)
+	{
+		return "<div style=\"display:inline-block;\"><span style=\"direction:rtl; text-align:right; float: right;\">{$string}</span></div>";
+	}
+
+	/**
+	 * Format the instance as date
+	 *
+	 * @return string
+	 */
+	public function toDateString($digits = null)
+	{
+		return $this->format('Y/m/d', $digits);
+	}
+
+	/**
+	 * Format the instance as a readable date
+	 *
+	 * @return string
+	 */
+	public function toFormattedDateString($digits = null)
+	{
+		return $this->format('j-F-Y', $digits);
+	}
+
+	/**
+	 * Format the instance as time
+	 *
+	 * @return string
+	 */
+	public function toTimeString($digits = null)
+	{
+		return $this->format('H:i:s', $digits);
+	}
+
+	/**
+	 * Format the instance as date and time
+	 *
+	 * @return string
+	 */
+	public function toDateTimeString($digits = null)
+	{
+		return $this->format('Y/m/d H:i:s', $digits);
+	}
+
+	/**
+	 * Format the instance with day, date and time
+	 *
+	 * @return string
+	 */
+	public function toDayDateTimeString($digits = null)
+	{
+		return $this->format('l - j F Y - g:i a', $digits);
 	}
 
 	/**
@@ -447,10 +555,14 @@ class jCarbon extends Carbon
 	 *
 	 * @return Carbon
 	 */
-	public function setJalaliDate($year, $month, $day)
+	public function setDate($year, $month, $day, $mode = self::MODE_JALALI)
 	{
-		list($gy,$gm,$gd)=self::to_gregorian($year, $month, $day);
-		return parent::setDate($gy,$gm,$gd);
+		if ($mode == self::MODE_GREGORIAN) {
+			return parent::setDate($gy, $gm, $gd);
+		}
+
+		list($gy, $gm, $gd) = self::to_gregorian($year, $month, $day);
+		return parent::setDate($gy, $gm, $gd);
 	}
 
 	/**
@@ -464,9 +576,124 @@ class jCarbon extends Carbon
 	 *
 	 * @return static
 	 */
-	public function setJalaliDateTime($year, $month, $day, $hour, $minute, $second = 0)
+	public function setDateTime($year, $month, $day, $hour, $minute, $second = 0, $mode = self::MODE_JALALI)
 	{
-		list($gy,$gm,$gd)=self::to_gregorian($year, $month, $day);
-		return parent::setDate($gy,$gm,$gd)->setTime($hour, $minute, $second);
+		if ($mode == self::MODE_GREGORIAN) {
+			return parent::setDateTime($gy, $gm, $gd, $hour, $minute, $second);
+		}
+		list($gy, $gm, $gd) = self::to_gregorian($year, $month, $day);
+		return parent::setDate($gy, $gm, $gd)->setTime($hour, $minute, $second);
+	}
+
+	/*
+
+    / **
+     * Create a Carbon instance from a specific format.
+     *
+     * @param string                    $format
+     * @param string                    $time
+     * @param \DateTimeZone|string|null $tz
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return static
+     * /
+	public static function createFromFormat($format, $time, $tz = null)
+	{
+		if ($tz !== null) {
+			$dt = parent::createFromFormat($format, $time, static::safeCreateDateTimeZone($tz));
+		} else {
+			$dt = parent::createFromFormat($format, $time);
+		}
+
+		if ($dt instanceof DateTime) {
+			return static::instance($dt);
+		}
+
+		$errors = static::getLastErrors();
+		throw new InvalidArgumentException(implode(PHP_EOL, $errors['errors']));
+	}
+
+	 */
+
+
+	/**
+	 * @param $format
+	 * @param $date
+	 * @return array
+	 */
+	public function parseFromFormat($format, $date)
+	{
+		// reverse engineer date formats
+		$keys = array(
+			'Y' => array('year', '\d{4}'),
+			'y' => array('year', '\d{2}'),
+			'm' => array('month', '\d{2}'),
+			'n' => array('month', '\d{1,2}'),
+			'M' => array('month', '[A-Z][a-z]{3}'),
+			'F' => array('month', '[A-Z][a-z]{2,8}'),
+			'd' => array('day', '\d{2}'),
+			'j' => array('day', '\d{1,2}'),
+			'D' => array('day', '[A-Z][a-z]{2}'),
+			'l' => array('day', '[A-Z][a-z]{6,9}'),
+			'u' => array('hour', '\d{1,6}'),
+			'h' => array('hour', '\d{2}'),
+			'H' => array('hour', '\d{2}'),
+			'g' => array('hour', '\d{1,2}'),
+			'G' => array('hour', '\d{1,2}'),
+			'i' => array('minute', '\d{2}'),
+			's' => array('second', '\d{2}'),
+		);
+		// convert format string to regex
+		$regex = '';
+		$chars = str_split($format);
+		foreach ($chars as $n => $char) {
+			$lastChar = isset($chars[$n - 1]) ? $chars[$n - 1] : '';
+			$skipCurrent = '\\' == $lastChar;
+			if (!$skipCurrent && isset($keys[$char])) {
+				$regex .= '(?P<' . $keys[$char][0] . '>' . $keys[$char][1] . ')';
+			} else {
+				if ('\\' == $char) {
+					$regex .= $char;
+				} else {
+					$regex .= preg_quote($char);
+				}
+			}
+		}
+		$dt = array();
+		$dt['error_count'] = 0;
+		// now try to match it
+		if (preg_match('#^' . $regex . '$#', $date, $dt)) {
+			foreach ($dt as $k => $v) {
+				if (is_int($k)) {
+					unset($dt[$k]);
+				}
+			}
+			if (!jDateTime::checkdate($dt['month'], $dt['day'], $dt['year'], false)) {
+				$dt['error_count'] = 1;
+			}
+		} else {
+			$dt['error_count'] = 1;
+		}
+		$dt['errors'] = array();
+		$dt['fraction'] = '';
+		$dt['warning_count'] = 0;
+		$dt['warnings'] = array();
+		$dt['is_localtime'] = 0;
+		$dt['zone_type'] = 0;
+		$dt['zone'] = 0;
+		$dt['is_dst'] = '';
+		if (strlen($dt['year']) == 2) {
+			$now = self::forge('now');
+			$x = $now->format('Y') - $now->format('y');
+			$dt['year'] += $x;
+		}
+		$dt['year'] = isset($dt['year']) ? (int)$dt['year'] : 0;
+		$dt['month'] = isset($dt['month']) ? (int)$dt['month'] : 0;
+		$dt['day'] = isset($dt['day']) ? (int)$dt['day'] : 0;
+		$dt['hour'] = isset($dt['hour']) ? (int)$dt['hour'] : 0;
+		$dt['minute'] = isset($dt['minute']) ? (int)$dt['minute'] : 0;
+		$dt['second'] = isset($dt['second']) ? (int)$dt['second'] : 0;
+		return $dt;
 	}
 }
