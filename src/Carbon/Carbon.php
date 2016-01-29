@@ -2590,6 +2590,7 @@ class Carbon extends DateTime
      */
     public function previous($dayOfWeek = null)
     {
+        print_r(static::$days);
         if ($dayOfWeek === null) {
             $dayOfWeek = $this->dayOfWeek;
         }
