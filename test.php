@@ -13,7 +13,7 @@ function showTest($testName,$test,$carbon)
 
 require __DIR__ . '/vendor/autoload.php';
 
-use carbon\jCarbon;
+use carbon\Jcarbon;
 /*
 $t=new Carbon\jCarbon();
 echo "<br>";
@@ -30,7 +30,7 @@ printf("Right now in Vancouver is %s", jCarbon::now('America/Vancouver'));  //im
 date_default_timezone_set('Asia/tehran');
 // Make for timezone
 
-$carbon=new Carbon\jCarbon('now','Asia/tehran');
+$carbon=new Carbon\Jcarbon('now','Asia/tehran');
 
 //$carbon->digitsType(jCarbon::FARSI_DIGITS); ;
 //$carbon->month=3;

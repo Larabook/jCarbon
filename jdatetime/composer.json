@@ -1,0 +1,27 @@
+{
+    "name": "elegantweb/jdatetime",
+    "description": "small class for work with jalali date and time",
+    "version": "1.0.0-dev",
+    "keywords": [
+        "date", "datetime", "jalali", "jalalidate", "jdatetime",
+        "shamsi", "iran", "farsi", "persian", "time",
+        "jdate", "jalali php class"
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.8.*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/JDateTime.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "sina sharifzade",
+            "email": "sharifzadesina@gmail.com"
+        }
+    ]
+}
